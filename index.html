@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+    <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+    <!-- <script src="https://cozmo.github.io/jsQR/jsQR.js"></script> -->
+    <!-- <script src="https://blog.minhazav.dev/assets/research/html5qrcode/html5-qrcode.min.v2.3.0.js"></script>-->
+    <!-- <script type="text/javascript" src="https://rawgit.com/schmich/instascan-builds/master/instascan.min.js"></script>-->
+    <!-- we import arjs version without NFT but with marker + location based support -->
+    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+    <body style="margin : 0px; overflow: hidden;">
+        <!-- <video autoplay></video>-->
+        <div id="reader" width="600px" height="600px" hidden></div>
+        <canvas id="canvas" hidden></canvas>
+        <a-scene embedded arjs="detectionMode: mono_and_matrix; matrixCodeType: 3x3;" id="scene" >
+        <a-marker id="hiro_marker" preset="hiro">
+            <!-- we use cors proxy to avoid cross-origin problems ATTENTION! you need to set up your server -->
+            <a-image id="marker_content" src="https://demo.open-semantic-lab.org/w/img_auth.php/1/1e/OSWd1c24f1c4b014ebe99c2a83672e3dfc7.png"></a-image>
+        </a-marker>
+        <xa-marker registerevents type="barcode" value="5">
+          <a-image src="https://demo.open-semantic-lab.org/w/img_auth.php/1/1e/OSWd1c24f1c4b014ebe99c2a83672e3dfc7.png"></a-image>
+        </xa-marker>
+        <xa-marker preset="custom" type="pattern" url="https://cdn.glitch.global/31d432af-5039-4ae3-8e72-a5ecdb61f651/pattern-QR_semi_clean.patt?v=1738733401875">
+            <!-- we use cors proxy to avoid cross-origin problems ATTENTION! you need to set up your server -->
+            <a-video src="https://demo.open-semantic-lab.org/w/img_auth.php/9/96/Create_test_entry.mp4"></a-video>
+        </xa-marker>  
+        <a-entity camera></a-entity>
+        </a-scene>
+      <script>
+      console.log("SCRIPT");
+var canvasElement = document.getElementById("canvas");
+        var canvas = canvasElement.getContext("2d");
+// grab the video element
+//const video = document.querySelector('video');
+var video = document.createElement("video");
+        video.setAttribute('id', 'mirror_video');
+// this object needs to be an argument of getUserMedia
+const constraints = {
+   video: true
+};
+const html5QrCode = new Html5Qrcode("reader"); 
+// when you grab the stream - display it on the <video> element
+navigator.mediaDevices.getUserMedia(constraints).
+    then((stream) => {
+  video.srcObject = stream;
+  video.play();
+  requestAnimationFrame(tick);
+});
+    let qr_code_value = "";
+    function tick() {
+      if (video.readyState === video.HAVE_ENOUGH_DATA) {
+
+        canvasElement.height = video.videoHeight;
+        canvasElement.width = video.videoWidth;
+        canvas.drawImage(video, 0, 0, canvasElement.width, canvasElement.height);
+        var imageData = canvas.getImageData(0, 0, canvasElement.width, canvasElement.height);
+        /*var code = jsQR(imageData.data, imageData.width, imageData.height, {
+          inversionAttempts: "dontInvert",
+        });*/
+        var code = null;
+        /*canvasElement.toBlob((blob) => {
+          try {
+        html5QrCode.scanFile( new File([blob], "frame.png"), false)
+          .then(decodedText => {
+            // success, use decodedText
+            console.log(decodedText);
+        })}
+        catch (e){}
+        })*/
+        /*let scanner = new Instascan.Scanner({ video: document.getElementById('mirror_video') });
+      scanner.addListener('scan', function (content) {
+        console.log(content);
+      });*/
+        if (code && code.data !== "") {
+          if (code.data !== qr_code_value) {
+            console.log(code);
+            qr_code_value = code.data;
+            var scene = document.querySelector('#scene')
+            var marker = document.querySelector('#hiro_marker')
+            var content = document.querySelector('#marker_content')
+            marker.removeChild(content);
+            var content = document.createElement('a-entity');
+            
+            qr_code_value = qr_code_value.split('#')[qr_code_value.split('#').length - 1];
+            
+            const splitArray = qr_code_value.split('.');
+            const lastElement = splitArray[splitArray.length - 1];
+            if (["png"].includes(lastElement)){  
+              content = document.createElement('a-image');
+              content.setAttribute('src', `${qr_code_value}`);
+            }
+            else if (["mp4"].includes(lastElement)){  
+              content = document.createElement('a-video');
+              content.setAttribute('src', `${qr_code_value}`);
+            }
+            else {
+              content.setAttribute('text', {value: "Could not process file of type " + lastElement});
+            }
+            content.setAttribute('scale', {x: 5, y:5, z:5});
+            content.setAttribute('id', 'marker_content');
+            
+            marker.appendChild(content);
+            //marker.innerHMTL = `<a-entity text="value: ${qr_code_value}"></a-entity>`;
+            
+            console.log(scene);
+          }
+        }
+      }
+      requestAnimationFrame(tick);
+    }
+        
+      AFRAME.registerComponent ('registerevents', {
+init: function () {
+var marker = this.el;
+marker.addEventListener ('markerFound', function (e) {
+var markerId = marker.id;
+console.log ('! markerFound', this, e);
+console.log('Barcode value: ', e.srcElement.components["arjs-anchor"].attrValue.barcodeValue)
+//object_found (markerId);
+});
+}});
+      </script>
+    </body>
+</html>
