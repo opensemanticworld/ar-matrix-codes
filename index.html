@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 <html>
     <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
-    <!-- <script src="https://cozmo.github.io/jsQR/jsQR.js"></script> -->
+    <script src="https://cozmo.github.io/jsQR/jsQR.js"></script>
     <!-- <script src="https://blog.minhazav.dev/assets/research/html5qrcode/html5-qrcode.min.v2.3.0.js"></script>-->
     <!-- <script type="text/javascript" src="https://rawgit.com/schmich/instascan-builds/master/instascan.min.js"></script>-->
     <!-- we import arjs version without NFT but with marker + location based support -->
     <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
     <body style="margin : 0px; overflow: hidden;">
         <!-- <video autoplay></video>-->
-        <div id="reader" width="600px" height="600px" hidden></div>
+        <!-- <div id="reader" width="600px" height="600px" hidden></div>-->
         <canvas id="canvas" hidden></canvas>
         <a-scene embedded arjs="detectionMode: mono_and_matrix; matrixCodeType: 3x3;" id="scene" >
         <a-marker id="hiro_marker" preset="hiro">
@@ -22,21 +22,23 @@
             <!-- we use cors proxy to avoid cross-origin problems ATTENTION! you need to set up your server -->
             <a-video src="https://demo.open-semantic-lab.org/w/img_auth.php/9/96/Create_test_entry.mp4"></a-video>
         </xa-marker>  
-        <a-entity camera></a-entity>
+        <a-entity camera></a-entity> 
         </a-scene>
       <script>
       console.log("SCRIPT");
-var canvasElement = document.getElementById("canvas");
+     //var canvasElement = document.getElementById("canvas");   
+var canvasElement = document.createElement("canvas");
         var canvas = canvasElement.getContext("2d");
 // grab the video element
 //const video = document.querySelector('video');
 var video = document.createElement("video");
-        video.setAttribute('id', 'mirror_video');
+        //video.setAttribute('id', 'mirror_video');
 // this object needs to be an argument of getUserMedia
 const constraints = {
-   video: true
+   //video: true
+  {video: { facingMode: { exact: "environment" } }
 };
-const html5QrCode = new Html5Qrcode("reader"); 
+//const html5QrCode = new Html5Qrcode("reader"); 
 // when you grab the stream - display it on the <video> element
 navigator.mediaDevices.getUserMedia(constraints).
     then((stream) => {
@@ -45,34 +47,26 @@ navigator.mediaDevices.getUserMedia(constraints).
   requestAnimationFrame(tick);
 });
     let qr_code_value = "";
-    function tick() {
-      if (video.readyState === video.HAVE_ENOUGH_DATA) {
-
-        canvasElement.height = video.videoHeight;
-        canvasElement.width = video.videoWidth;
-        canvas.drawImage(video, 0, 0, canvasElement.width, canvasElement.height);
-        var imageData = canvas.getImageData(0, 0, canvasElement.width, canvasElement.height);
-        /*var code = jsQR(imageData.data, imageData.width, imageData.height, {
-          inversionAttempts: "dontInvert",
-        });*/
-        var code = null;
-        /*canvasElement.toBlob((blob) => {
-          try {
-        html5QrCode.scanFile( new File([blob], "frame.png"), false)
-          .then(decodedText => {
-            // success, use decodedText
-            console.log(decodedText);
-        })}
-        catch (e){}
-        })*/
+        
         /*let scanner = new Instascan.Scanner({ video: document.getElementById('mirror_video') });
       scanner.addListener('scan', function (content) {
         console.log(content);
+        handleScan(content);
+      });
+Instascan.Camera.getCameras().then(function (cameras) {
+        if (cameras.length > 0) {
+          scanner.start(cameras[0]);
+        } else {
+          console.error('No cameras found.');
+        }
+      }).catch(function (e) {
+        console.error(e);
       });*/
-        if (code && code.data !== "") {
-          if (code.data !== qr_code_value) {
+        
+    function handleScan(code) {
+        if (code !== qr_code_value) {
             console.log(code);
-            qr_code_value = code.data;
+            qr_code_value = code;
             var scene = document.querySelector('#scene')
             var marker = document.querySelector('#hiro_marker')
             var content = document.querySelector('#marker_content')
@@ -102,6 +96,32 @@ navigator.mediaDevices.getUserMedia(constraints).
             
             console.log(scene);
           }
+    }    
+        
+    function tick() { 
+      if (video.readyState === video.HAVE_ENOUGH_DATA) {
+
+        canvasElement.height = video.videoHeight;
+        canvasElement.width = video.videoWidth;
+        canvas.drawImage(video, 0, 0, canvasElement.width, canvasElement.height);
+        var code = null;
+        var imageData = canvas.getImageData(0, 0, canvasElement.width, canvasElement.height);
+        code = jsQR(imageData.data, imageData.width, imageData.height, {
+          inversionAttempts: "dontInvert",
+        });
+        
+        /*canvasElement.toBlob((blob) => {
+          try {
+        html5QrCode.scanFile( new File([blob], "frame.png"), false)
+          .then(decodedText => {
+            // success, use decodedText
+            console.log(decodedText);
+        })}
+        catch (e){}
+        })*/
+
+        if (code && code.data !== "") {
+          handleScan(code.data);
         }
       }
       requestAnimationFrame(tick);
