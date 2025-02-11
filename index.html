@@ -36,7 +36,7 @@ var video = document.createElement("video");
 // this object needs to be an argument of getUserMedia
 const constraints = {
    //video: true
-  {video: { facingMode: { exact: "environment" } }
+  video: { facingMode: "environment" }
 };
 //const html5QrCode = new Html5Qrcode("reader"); 
 // when you grab the stream - display it on the <video> element
