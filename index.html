@@ -81,19 +81,19 @@ Instascan.Camera.getCameras().then(function (cameras) {
               content = document.createElement('a-image');
               content.setAttribute('src', `${qr_code_value}`);
               content.setAttribute('scale', {x: 5, y:5, z:5});
-              content.setAttribute('rotation', {x: 90, y: 0, z: 0});
+              content.setAttribute('rotation', {x: 0, y: 90, z: 0});
             }
             else if (["mp4"].includes(lastElement)){  
               content = document.createElement('a-video');
               content.setAttribute('src', `${qr_code_value}`);
               content.setAttribute('scale', {x: 5, y:5, z:5});
-              content.setAttribute('rotation', {x: 90, y: 0, z: 0});
+              content.setAttribute('rotation', {x: 0, y: 90, z: 0});
             }
             else if (["obj"].includes(lastElement)){  
               content = document.createElement('a-obj-model');
               content.setAttribute('src', `${qr_code_value}`);
               content.setAttribute('scale', {x: 0.05, y:0.05, z:0.05});
-              content.setAttribute('rotation', {x: 90, y: 0, z: 0});
+              content.setAttribute('rotation', {x: 0, y: 90, z: 0});
             }
             else {
               content.setAttribute('text', {value: "Could not process file of type " + lastElement});
